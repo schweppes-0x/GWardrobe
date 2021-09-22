@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 
-<AnchorPane prefHeight="260.0" prefWidth="439.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GWardrobe">
+<AnchorPane prefHeight="260.0" prefWidth="439.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GWardrobe">
    <children>
       <TabPane prefHeight="260.0" prefWidth="439.0" style="-fx-background-color: #FFA500;" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -12,14 +20,14 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="245.0" prefWidth="391.0">
                      <children>
+                        <Pane layoutX="280.0" layoutY="12.0" prefHeight="146.0" prefWidth="87.0" style="-fx-background-color: #CCCCCC; -fx-border-radius: 15; -fx-background-radius: 10 10 10 10;" />
                         <ImageView fx:id="generalImage" fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@avatarimage.png" />
                            </image>
                         </ImageView>
                         <Label layoutX="300.0" layoutY="20.0" text="Current:" />
-                        <ToggleButton fx:id="wardrobeToggleButton" layoutX="37.0" layoutY="90.0" mnemonicParsing="false" onAction="#toggleWardrobeButton" style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" text="Turned OFF" />
-                        <ToggleButton fx:id="wardrobeToggleButton1" layoutX="266.0" layoutY="156.0" mnemonicParsing="false" onAction="#toggleWardrobeButton" style="-fx-border-color: #000000; -fx-border-radius: 5;" text="Add current outfit" />
+                        <ToggleButton fx:id="wardrobeToggleButton" layoutX="265.0" layoutY="170.0" mnemonicParsing="false" onAction="#toggleWardrobeButton" prefHeight="27.0" prefWidth="118.0" style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" text="Turned OFF" />
                      </children></AnchorPane>
             </content>
           </Tab>
@@ -27,15 +35,16 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="231.0" prefWidth="429.0">
                      <children>
-                        <ListView fx:id="outlookList" layoutX="10.0" layoutY="14.0" onMouseClicked="#GetSelectedOutfit" onMousePressed="#GetSelectedOutfit" prefHeight="152.0" prefWidth="261.0" />
-                        <Button layoutX="256.0" layoutY="177.0" mnemonicParsing="false" onAction="#clear" style="-fx-border-color: #000000;" text="Delete all" />
+                        <Pane layoutX="280.0" layoutY="12.0" prefHeight="146.0" prefWidth="87.0" style="-fx-background-color: #CCCCCC; -fx-border-radius: 15; -fx-background-radius: 10 10 10 10;" />
+                        <ListView fx:id="outlookList" layoutX="10.0" layoutY="14.0" onMouseClicked="#GetSelectedOutfit" onMousePressed="#GetSelectedOutfit" prefHeight="152.0" prefWidth="261.0" style="-fx-border-color: #000000; -fx-border-radius: 5 5 0 0;" />
+                        <Button layoutX="256.0" layoutY="177.0" mnemonicParsing="false" onAction="#clear" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete all" />
                         <ImageView fx:id="wardrobeImage" fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@avatarimage.png" />
                            </image></ImageView>
                         <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
-                        <Button layoutX="10.0" layoutY="177.0" mnemonicParsing="false" onAction="#OnSetOutfitClicked" style="-fx-border-color: #000000;" text="Wear Outfit" />
-                        <Button layoutX="121.0" layoutY="177.0" mnemonicParsing="false" onAction="#deleteSelected" style="-fx-border-color: #000000;" text="Delete selected" />
+                        <Button layoutX="10.0" layoutY="177.0" mnemonicParsing="false" onAction="#OnSetOutfitClicked" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Wear Outfit" />
+                        <Button layoutX="121.0" layoutY="177.0" mnemonicParsing="false" onAction="#deleteSelected" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete selected" />
                      </children>
                   </AnchorPane>
             </content>
@@ -44,6 +53,7 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
+                        <Pane layoutX="280.0" layoutY="12.0" prefHeight="146.0" prefWidth="87.0" style="-fx-background-color: #CCCCCC; -fx-border-radius: 15; -fx-background-radius: 10 10 10 10;" />
                         <TextField fx:id="customFigureText" layoutX="14.0" layoutY="44.0" onKeyReleased="#changeCustomFigure" prefHeight="27.0" prefWidth="192.0" promptText="Paste your figure string here..." style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" />
                         <Label layoutX="69.0" layoutY="21.0" text="Figure string:" />
                         <ImageView fx:id="customFigureImage" fitHeight="220.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
@@ -52,7 +62,7 @@
                            </image>
                         </ImageView>
                         <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
-                        <Button layoutX="56.0" layoutY="87.0" mnemonicParsing="false" onAction="#addCustomFigure" style="-fx-border-color: #000000; -fx-border-radius: 5;" text="Add to Wardrobe" />
+                        <Button layoutX="56.0" layoutY="87.0" mnemonicParsing="false" onAction="#addCustomFigure" style="-fx-border-color: #000000; -fx-border-radius: 5; -fx-background-color: #CCCCCC;" text="Add to Wardrobe" />
                      </children>
                   </AnchorPane>
               </content>
@@ -61,6 +71,7 @@
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="206.0" prefWidth="352.0">
                      <children>
+                        <Pane layoutX="280.0" layoutY="12.0" prefHeight="146.0" prefWidth="87.0" style="-fx-background-color: #CCCCCC; -fx-border-radius: 15; -fx-background-radius: 10 10 10 10;" />
                         <ImageView fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@avatarimage.png" />
