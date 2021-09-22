@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="260.0" prefWidth="439.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GWardrobe">
+   <children>
+      <TabPane prefHeight="260.0" prefWidth="439.0" style="-fx-background-color: #FFA500;" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab onSelectionChanged="#TurnOffGeneral" text="General">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="245.0" prefWidth="391.0">
+                     <children>
+                        <ImageView fx:id="generalImage" fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@avatarimage.png" />
+                           </image>
+                        </ImageView>
+                        <Label layoutX="300.0" layoutY="20.0" text="Current:" />
+                        <ToggleButton fx:id="wardrobeToggleButton" layoutX="37.0" layoutY="90.0" mnemonicParsing="false" onAction="#toggleWardrobeButton" style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" text="Turned OFF" />
+                        <ToggleButton fx:id="wardrobeToggleButton1" layoutX="266.0" layoutY="156.0" mnemonicParsing="false" onAction="#toggleWardrobeButton" style="-fx-border-color: #000000; -fx-border-radius: 5;" text="Add current outfit" />
+                     </children></AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Wardrobe">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="231.0" prefWidth="429.0">
+                     <children>
+                        <ListView fx:id="outlookList" layoutX="10.0" layoutY="14.0" onMouseClicked="#GetSelectedOutfit" onMousePressed="#GetSelectedOutfit" prefHeight="152.0" prefWidth="261.0" />
+                        <Button layoutX="256.0" layoutY="177.0" mnemonicParsing="false" onAction="#clear" style="-fx-border-color: #000000;" text="Delete all" />
+                        <ImageView fx:id="wardrobeImage" fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@avatarimage.png" />
+                           </image></ImageView>
+                        <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
+                        <Button layoutX="10.0" layoutY="177.0" mnemonicParsing="false" onAction="#OnSetOutfitClicked" style="-fx-border-color: #000000;" text="Wear Outfit" />
+                        <Button layoutX="121.0" layoutY="177.0" mnemonicParsing="false" onAction="#deleteSelected" style="-fx-border-color: #000000;" text="Delete selected" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Custom Figure">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TextField fx:id="customFigureText" layoutX="14.0" layoutY="44.0" onKeyReleased="#changeCustomFigure" prefHeight="27.0" prefWidth="192.0" promptText="Paste your figure string here..." style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" />
+                        <Label layoutX="69.0" layoutY="21.0" text="Figure string:" />
+                        <ImageView fx:id="customFigureImage" fitHeight="220.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@avatarimage.png" />
+                           </image>
+                        </ImageView>
+                        <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
+                        <Button layoutX="56.0" layoutY="87.0" mnemonicParsing="false" onAction="#addCustomFigure" style="-fx-border-color: #000000; -fx-border-radius: 5;" text="Add to Wardrobe" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+            <Tab closable="false" disable="true" text="Other Habbo' s">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="206.0" prefWidth="352.0">
+                     <children>
+                        <ImageView fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@avatarimage.png" />
+                           </image>
+                        </ImageView>
+                        <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
+                        <Button layoutX="54.0" layoutY="154.0" mnemonicParsing="false" onAction="#addSelectedHabboOutfit" prefHeight="38.0" prefWidth="142.0" style="-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius: 5;" text="Click on a habbo first" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>
