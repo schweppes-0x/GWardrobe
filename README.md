@@ -35,3 +35,10 @@ To import your custom outfit, perform the next steps:
  1. Place your formatted figure string into the text field (FIGURESTRING:GENDER)
  2. Click on "Add to Wardrobe"
  3. It now should be added to your Wardrobe.
+
+
+-------------------------------------------------------------------------------------
+Features for the futute:
+ - Make automatic creation of file.
+ - Copy other Habbo's outfits.
+ - Copy your current outfit.
