@@ -14,6 +14,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 
+import javax.swing.*;
 import java.io.*;
 import java.lang.*;
 import java.nio.file.Files;
@@ -29,8 +30,8 @@ import java.util.*;
 )
 
 public class GWardrobe extends ExtensionForm{
-    private File directory;
-    private File outfits;
+    private File outfitFile;
+
     private HashSet<String> loadedFigureStrings = new HashSet<String>();
 
     public ToggleButton wardrobeToggleButton;
@@ -47,7 +48,7 @@ public class GWardrobe extends ExtensionForm{
     protected void initExtension() {
         generalImage.imageProperty().set(defaultImage);
         customFigureImage.imageProperty().set(defaultImage);
-        LoadWardrobe();
+        //LoadWardrobe();
 
         intercept(HMessage.Direction.TOCLIENT, "FigureUpdate", hMessage -> {
             HPacket packet = hMessage.getPacket();
@@ -86,7 +87,7 @@ public class GWardrobe extends ExtensionForm{
     }
 
     private boolean WardrobeFileExists() {
-        try{
+        try{/*
             directory = new File(GWardrobe.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()+File.separator + "Wardrobe/");
             System.out.println(directory.getPath());
 
@@ -107,7 +108,10 @@ public class GWardrobe extends ExtensionForm{
                 outfits.createNewFile();
             }else {
                 System.out.println("[\uD83D\uDDF8} - File exists!");
-            }
+            }*/
+            if(!outfitFile.exists())
+                return false;
+
             ReadWardrobeFile();
             return true;
         }
@@ -122,12 +126,12 @@ public class GWardrobe extends ExtensionForm{
     }
 
     private void WriteToFile(String text){
-        if(outfits==null || !outfits.exists())
+        if(outfitFile==null || !outfitFile.exists())
             return;
 
         try
         {
-            FileWriter fileWriter = new FileWriter(outfits, true);
+            FileWriter fileWriter = new FileWriter(outfitFile, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             bufferedWriter.append(text);
@@ -140,11 +144,11 @@ public class GWardrobe extends ExtensionForm{
         }
 
     private void ReadWardrobeFile(){
-        if(outfits==null || !outfits.exists())
+        if(outfitFile==null || !outfitFile.exists())
             return;
         System.out.println("[\uD83D\uDDF8] - Trying to read file..");
         try {
-            Scanner myReader = new Scanner(outfits);
+            Scanner myReader = new Scanner(outfitFile);
             while (myReader.hasNextLine()) {
                 String read = myReader.nextLine();
                 if(read.isEmpty())
@@ -167,8 +171,8 @@ public class GWardrobe extends ExtensionForm{
 
     private void RewriteDataToFile() {
         try{
-            outfits.delete();
-            outfits.createNewFile();
+            outfitFile.delete();
+            outfitFile.createNewFile();
             for (String string : loadedFigureStrings) {
                 WriteToFile(string);
             }
@@ -179,7 +183,13 @@ public class GWardrobe extends ExtensionForm{
     }
 
     public void clear(ActionEvent actionEvent) {
-        outfits.delete();
+        outfitFile.delete();
+        try {
+            outfitFile.createNewFile();
+        }
+        catch (Exception e){
+
+        }
     }
 
     private void AddFigure(String figureString, String sex){
@@ -207,7 +217,6 @@ public class GWardrobe extends ExtensionForm{
             }
         });
     }
-
 
     public String GetSelectedOutfit(MouseEvent mouseEvent) {
         Platform.runLater(()->{
@@ -281,5 +290,19 @@ public class GWardrobe extends ExtensionForm{
             }
         });
 
+    }
+
+    public void OnOpenFile(ActionEvent actionEvent) {
+        JFileChooser fileChooser = new JFileChooser();
+        int returnVal = fileChooser.showOpenDialog(null);
+        outfitFile = fileChooser.getSelectedFile();
+        try{
+            if(outfitFile.exists())
+                LoadWardrobe();
+        }
+        catch (Exception e){
+
+        }
+        return;
     }
 }

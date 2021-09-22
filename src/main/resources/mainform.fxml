@@ -12,9 +12,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 
-<AnchorPane prefHeight="260.0" prefWidth="439.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GWardrobe">
+<AnchorPane prefHeight="292.0" prefWidth="439.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GWardrobe">
    <children>
-      <TabPane prefHeight="260.0" prefWidth="439.0" style="-fx-background-color: #FFA500;" tabClosingPolicy="UNAVAILABLE">
+      <TabPane prefHeight="292.0" prefWidth="439.0" style="-fx-background-color: #FFA500;" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab onSelectionChanged="#TurnOffGeneral" text="General">
             <content>
@@ -37,14 +37,15 @@
                      <children>
                         <Pane layoutX="280.0" layoutY="12.0" prefHeight="146.0" prefWidth="87.0" style="-fx-background-color: #CCCCCC; -fx-border-radius: 15; -fx-background-radius: 10 10 10 10;" />
                         <ListView fx:id="outlookList" layoutX="10.0" layoutY="14.0" onMouseClicked="#GetSelectedOutfit" onMousePressed="#GetSelectedOutfit" prefHeight="152.0" prefWidth="261.0" style="-fx-border-color: #000000; -fx-border-radius: 5 5 0 0;" />
-                        <Button layoutX="256.0" layoutY="177.0" mnemonicParsing="false" onAction="#clear" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete all" />
+                        <Button layoutX="13.0" layoutY="211.0" mnemonicParsing="false" onAction="#clear" prefHeight="27.0" prefWidth="103.0" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete all" />
                         <ImageView fx:id="wardrobeImage" fitHeight="127.0" fitWidth="64.0" layoutX="290.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@avatarimage.png" />
                            </image></ImageView>
                         <Label layoutX="300.0" layoutY="20.0" text="Selected:" />
-                        <Button layoutX="10.0" layoutY="177.0" mnemonicParsing="false" onAction="#OnSetOutfitClicked" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Wear Outfit" />
-                        <Button layoutX="121.0" layoutY="177.0" mnemonicParsing="false" onAction="#deleteSelected" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete selected" />
+                        <Button layoutX="141.0" layoutY="176.0" mnemonicParsing="false" onAction="#OnSetOutfitClicked" prefHeight="27.0" prefWidth="100.0" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Wear Outfit" />
+                        <Button layoutX="141.0" layoutY="211.0" mnemonicParsing="false" onAction="#deleteSelected" prefHeight="27.0" prefWidth="100.0" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Delete selected" />
+                        <Button layoutX="13.0" layoutY="176.0" mnemonicParsing="false" onAction="#OnOpenFile" prefHeight="27.0" prefWidth="100.0" style="-fx-border-color: #000000; -fx-background-color: #CCCCCC; -fx-border-radius: 5;" text="Select file.." />
                      </children>
                   </AnchorPane>
             </content>
