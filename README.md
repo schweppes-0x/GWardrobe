@@ -1,7 +1,9 @@
 # GWardrobe
  Save and load your habbo outfits.
  
-![](https://user-images.githubusercontent.com/88944709/134412621-34e2fc63-e8e0-490b-824a-e05b870fca13.png)
+ ![](https://user-images.githubusercontent.com/88944709/134421457-74acc03c-c32e-461d-ac07-8c8133e4dbae.png)
+
+
 
 In order to use this extension, you first need to select the file in which you want to save your outfits. For more info, read [Wardrobe][4]. 
 
