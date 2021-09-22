@@ -3,6 +3,7 @@
  
 ![](https://user-images.githubusercontent.com/88944709/134412621-34e2fc63-e8e0-490b-824a-e05b870fca13.png)
 
+In order to use this extension, you first need to select the file in which you want to save your outfits. For more info, read [Wardrobe][4]. 
 
 [General]
 
@@ -20,7 +21,7 @@ Your Wardrobe consists of saved outfits. To choose one, just select the one you 
  1. Wear Outfit: Make your habbo wear this outfit. (Sometimes you need to click multiple times on this button as the connection sometimes gets interupted)
  2. Delete: Delete this outfit from your Wardrobe.
  3. Delete All: Delete all saved outfits in your Wardrobe.
-
+ 4. Select file: Select the file in which you want to save your outfits.
 
 [Custom Figure]
 
