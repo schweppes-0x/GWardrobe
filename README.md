@@ -17,7 +17,7 @@ To save your own outfit follow the next steps:
 [Wardrobe]
 
 Your Wardrobe consists of saved outfits. To choose one, just select the one you desire. Now you have the following options:
- 1. Wear Outfit: Make your habbo wear this outfit.
+ 1. Wear Outfit: Make your habbo wear this outfit. (Sometimes you need to click multiple times on this button as the connection sometimes gets interupted)
  2. Delete: Delete this outfit from your Wardrobe.
  3. Delete All: Delete all saved outfits in your Wardrobe.
 
