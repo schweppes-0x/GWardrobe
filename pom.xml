@@ -14,9 +14,10 @@
             <!-- Embedded FXML and CSS resources -->
             <resource>
                 <filtering>false</filtering>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.fxml</include>
+                    <include>**/*.png</include>
                     <include>**/*.css</include>
                 </includes>
             </resource>
@@ -84,7 +85,7 @@
     <dependencies>
         <dependency>
             <groupId>G-Earth</groupId>
-            <artifactId>G-Earth</artifactId>
+            <artifactId>G-Earth-Native-Extension</artifactId>
             <version>1.5.0</version>
         </dependency>
     </dependencies>

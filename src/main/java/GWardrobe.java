@@ -17,7 +17,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
-
 import java.io.*;
 import java.lang.*;
 import java.nio.file.Files;
@@ -27,7 +26,7 @@ import java.util.*;
 @ExtensionInfo(
         Title = "GWardrobe",
         Description = "Save and load your habbo outfits.",
-        Version = "1.0",
+        Version = "1.2",
         Author = "schweppes0x"
 )
 
@@ -61,7 +60,7 @@ public class GWardrobe extends ExtensionForm{
     protected void initExtension() {
         loadWardrobe();
 
-        generalImage.imageProperty().set(getImageByFigureString("hr-hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110"));
+        generalImage.imageProperty().set(getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110"));
         customFigureImage.imageProperty().set(defaultImage);
 
         intercept(HMessage.Direction.TOSERVER, "GetSelectedBadges", hMessage -> {
