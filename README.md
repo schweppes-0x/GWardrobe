@@ -45,10 +45,10 @@ To import your custom outfit, perform the next steps:
 
 -------------------------------------------------------------------------------------
 # Features for the futute:
- - ~~Make automatic creation of file.
- - ~~Copy other Habbo's outfits.
- - ~~Copy your current outfit.
- - Implement [Full Wardrobe](https://github.com/WiredSpast/FullWardrobe).
+ - [✅]Make automatic creation of file. 
+ - [✅]Copy other Habbo's outfits.
+ - [✅]Copy your current outfit.
+ - [⚒]Implement [Full Wardrobe](https://github.com/WiredSpast/FullWardrobe).
 
 # Credits
 
