@@ -4,8 +4,10 @@ import gearth.ui.GEarthController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.util.Objects;
 
 
 public class ExtensionLauncher extends ExtensionFormCreator {
@@ -19,7 +21,7 @@ public class ExtensionLauncher extends ExtensionFormCreator {
         primaryStage.setScene(new Scene(root));
         primaryStage.getScene().getStylesheets().add(GEarthController.class.getResource("/gearth/ui/bootstrap3.css").toExternalForm());
 
-        //primaryStage.getIcons().add(new Image(Objects.requireNonNull(this.getClass().getResource("icon.png")).openStream()));
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(this.getClass().getResource("icon.png")).openStream()));
 
         primaryStage.setResizable(false);
 

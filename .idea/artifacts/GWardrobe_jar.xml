@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="GWardrobe:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/GWardrobe_jar</output-path>
+    <root id="archive" name="GWardrobe.jar">
+      <element id="module-output" name="GWardrobe" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/G-Earth/G-Earth/1.5.0/G-Earth-1.5.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

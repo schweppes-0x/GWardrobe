@@ -32,10 +32,10 @@ import java.util.*;
 )
 
 public class GWardrobe extends ExtensionForm{
+
     private boolean isEnabled = false;
     private File directory;
     private File outfits;
-    private HGender gender = HGender.Unisex;
 
     private final HashMap<Integer, HEntity> users = new HashMap<>();
     private final HashMap<Integer, String> userFigures = new HashMap<>();
@@ -45,7 +45,6 @@ public class GWardrobe extends ExtensionForm{
 
 
     private HashSet<String> loadedFigureStrings = new HashSet<String>();
-    private boolean hasHC;
 
     public ToggleButton wardrobeToggleButton;
     public ListView<String> outlookList;
@@ -55,25 +54,12 @@ public class GWardrobe extends ExtensionForm{
     public ImageView customFigureImage;
     public ImageView selectedHabboImage;
     public Button otherHabboButton;
-    private Image defaultImage = new Image("avatarimage.png");
+    private Image defaultImage = new Image("defaultImage.png");
     private String baseUrl = "https://www.habbo.com/habbo-imaging/avatarimage?size=m&figure=";
-    public boolean loaded = false;
-
 
     @Override
     protected void initExtension() {
         loadWardrobe();
-        this.onConnect((s, i, s1, s2, hClient )->{
-            hasHC = false;
-            sendToServer(new HPacket("ScrGetUserInfo", HMessage.Direction.TOSERVER, "habbo_club"));
-        });
-
-        intercept(HMessage.Direction.TOCLIENT, "ScrSendUserInfo", hMessage -> {
-            HPacket packet = hMessage.getPacket();
-            if(packet.readString().equals("club_habbo")) {
-                hasHC = true;
-            }
-        }); // Getting HC information
 
         generalImage.imageProperty().set(getImageByFigureString("hr-hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110"));
         customFigureImage.imageProperty().set(defaultImage);
@@ -95,6 +81,7 @@ public class GWardrobe extends ExtensionForm{
 
             });
         }); // Clicked on another habbo
+
         intercept(HMessage.Direction.TOCLIENT, "RoomReady", hMessage -> {
             if(!isEnabled)
                 return;
@@ -109,6 +96,7 @@ public class GWardrobe extends ExtensionForm{
 
             });
         }); // Loaded room
+
         intercept(HMessage.Direction.TOCLIENT, "Users", hMessage -> {
             if(!isEnabled)
                 return;
@@ -121,6 +109,7 @@ public class GWardrobe extends ExtensionForm{
                         userGenders.put(entity.getIndex(), entity.getGender());
                     });
         }); // Loaded habbos
+
         intercept(HMessage.Direction.TOCLIENT, "UserChange", hMessage -> {
             if(!isEnabled)
                 return;
@@ -130,6 +119,7 @@ public class GWardrobe extends ExtensionForm{
             userFigures.replace(index, packet.readString());
             userGenders.replace(index, HGender.fromString(packet.readString()));
         }); // Someone came into the current room
+
         intercept(HMessage.Direction.TOCLIENT, "UserRemove", hMessage -> {
 
             int index = Integer.parseInt(hMessage.getPacket().readString());
@@ -137,6 +127,7 @@ public class GWardrobe extends ExtensionForm{
             userFigures.remove(index);
             userGenders.remove(index);
         }); // Someone left the current room
+
         intercept(HMessage.Direction.TOCLIENT, "FigureUpdate", hMessage -> {
             if(!isEnabled)
                 return;
@@ -186,7 +177,7 @@ public class GWardrobe extends ExtensionForm{
             directory = new File(new File(GWardrobe.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent() + "/Wardrobe");
             //check if dir exists
             if(directory.exists()){
-                System.out.println("[\uD83D\uDDF8] - Directory exists!");
+                System.out.println("[!] - Directory exists!");
                 System.out.println(directory.getPath());
             }else {
 
@@ -201,7 +192,7 @@ public class GWardrobe extends ExtensionForm{
                 System.out.println("[!] - File does not exist! Creating one..");
                 outfits.createNewFile();
             }else {
-                System.out.println("[\uD83D\uDDF8] - File exists!");
+                System.out.println("[!] - File exists!");
             }
 
             if(!outfits.exists())
@@ -224,7 +215,7 @@ public class GWardrobe extends ExtensionForm{
             System.out.println("[!] - Error, Outfits.txt is null");
             return;
         }
-        System.out.println("[\uD83D\uDDF8] - Trying to write to file.." );
+        System.out.println("[!] - Trying to write to file.." );
 
         try
         {
@@ -243,7 +234,7 @@ public class GWardrobe extends ExtensionForm{
     private void readWardrobeFile(){
         if(outfits==null || !outfits.exists())
             return;
-        System.out.println("[\uD83D\uDDF8] - Trying to read file..");
+        System.out.println("[!] - Trying to read file..");
         try {
             Scanner myReader = new Scanner(outfits);
             while (myReader.hasNextLine()) {
@@ -253,7 +244,7 @@ public class GWardrobe extends ExtensionForm{
                 loadedFigureStrings.add(read);
             }
             myReader.close();
-            System.out.println("[\uD83D\uDDF8] - Done with writing to file. Total lines: " + loadedFigureStrings.size());
+            System.out.println("[!] - Done with writing to file. Total lines: " + loadedFigureStrings.size());
             try{
                 //remove duplicates
                 overwriteUniqueListToFile();
@@ -309,7 +300,7 @@ public class GWardrobe extends ExtensionForm{
     }
 
     private void SetOutfit(String figureString, String sex){
-        sendToServer(new HPacket("{out:UpdateFigureData}{s:\""+sex+"\"}{s:\""+figureString+"\"}"))
+        sendToServer(new HPacket("{out:UpdateFigureData}{s:\""+sex+"\"}{s:\""+figureString+"\"}"));
     }
 
     private Image getImageByFigureString(String figureString){
@@ -363,7 +354,7 @@ public class GWardrobe extends ExtensionForm{
         overwriteUniqueListToFile();
         updateListView();
         Platform.runLater(()->{
-            wardrobeImage.setImage(new Image("avatarimage.png"));
+            wardrobeImage.setImage(new Image("defaultImage.png"));
         });
     }
 
