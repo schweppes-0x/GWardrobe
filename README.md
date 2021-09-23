@@ -42,3 +42,6 @@ Features for the futute:
  - Make automatic creation of file.
  - Copy other Habbo's outfits.
  - Copy your current outfit.
+
+[Credits]
+I re-used some of [WiredSpast](https://github.com/WiredSpast)'s methods which were used in his OutfitRandomizer. 
