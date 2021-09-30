@@ -8,10 +8,7 @@ import gearth.protocol.HPacket;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
@@ -26,7 +23,7 @@ import java.util.*;
 @ExtensionInfo(
         Title = "GWardrobe",
         Description = "Save and load your habbo outfits.",
-        Version = "1.2",
+        Version = "1.3",
         Author = "schweppes0x"
 )
 
@@ -35,6 +32,7 @@ public class GWardrobe extends ExtensionForm{
     private boolean isEnabled = false;
     private File directory;
     private File outfits;
+    private boolean copyOthers = true;
 
     private final HashMap<Integer, HEntity> users = new HashMap<>();
     private final HashMap<Integer, String> userFigures = new HashMap<>();
@@ -52,20 +50,24 @@ public class GWardrobe extends ExtensionForm{
     public ImageView wardrobeImage;
     public ImageView customFigureImage;
     public ImageView selectedHabboImage;
+    public Tab copyOthersTab;
     public Button otherHabboButton;
     private Image defaultImage = new Image("defaultImage.png");
+    private Image dinoImage;
     private String baseUrl = "https://www.habbo.com/habbo-imaging/avatarimage?size=m&figure=";
 
     @Override
     protected void initExtension() {
+         dinoImage = getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110");
         loadWardrobe();
 
-        generalImage.imageProperty().set(getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110"));
+        generalImage.imageProperty().set(dinoImage);
         customFigureImage.imageProperty().set(defaultImage);
 
         intercept(HMessage.Direction.TOSERVER, "GetSelectedBadges", hMessage -> {
-            if(!isEnabled)
+            if(!copyOthersTab.isSelected())
                 return;
+
             int id = hMessage.getPacket().readInteger();
             selectedIndex = users.values().stream()
                     .filter(hEntity -> hEntity.getId() == id)
@@ -75,7 +77,7 @@ public class GWardrobe extends ExtensionForm{
             Platform.runLater(()->{
                 selectedHabboImage.imageProperty().set(getImageByFigureString(userFigures.get(selectedIndex)));
                 otherHabboButton.styleProperty().set("-fx-background-color: #AAFFAA; -fx-border-color: #000000; -fx-border-radius: 5;");
-                otherHabboButton.textProperty().set("Add to Wardrobe");
+                otherHabboButton.textProperty().set("Copy to Wardrobe");
                 otherHabboButton.setDisable(false);
 
             });
@@ -299,10 +301,11 @@ public class GWardrobe extends ExtensionForm{
     }
 
     private void SetOutfit(String figureString, String sex){
-        sendToServer(new HPacket("{out:UpdateFigureData}{s:\""+sex+"\"}{s:\""+figureString+"\"}"));
+        sendToServer(new HPacket("UpdateFigureData", HMessage.Direction.TOCLIENT, sex, figureString));
     }
 
     private Image getImageByFigureString(String figureString){
+        System.out.println("[] getting image");
         return new Image(baseUrl+figureString);
     }
 
@@ -349,9 +352,13 @@ public class GWardrobe extends ExtensionForm{
 
     public void deleteSelected(ActionEvent actionEvent) {
         String toRemove = GetSelectedOutfit(null);
+        if(toRemove==null)
+            return;
+
         loadedFigureStrings.remove(toRemove);
         overwriteUniqueListToFile();
         updateListView();
+
         Platform.runLater(()->{
             wardrobeImage.setImage(new Image("defaultImage.png"));
         });
@@ -370,6 +377,8 @@ public class GWardrobe extends ExtensionForm{
     }
 
     public String GetSelectedOutfit(MouseEvent mouseEvent) {
+        if(outlookList.getItems().size() == 0)
+            return "";
         Platform.runLater(()->{
             wardrobeImage.setImage(getImageByFigureString(outlookList.getSelectionModel().getSelectedItem().split(":")[0]));
         });
@@ -392,4 +401,11 @@ public class GWardrobe extends ExtensionForm{
 
     }
 
+    public void turnOffHabboSelect(Event event) {
+        Platform.runLater(()->{
+            otherHabboButton.styleProperty().set("-fx-background-color: #FFAAAA; -fx-border-color: #000000; -fx-border-radius:5");
+            otherHabboButton.setDisable(true);
+            otherHabboButton.textProperty().set("Click on a user");
+        });
+    }
 }
