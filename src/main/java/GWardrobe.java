@@ -8,11 +8,16 @@ import gearth.protocol.HPacket;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import org.jetbrains.annotations.NotNull;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.*;
 import java.lang.*;
@@ -31,7 +36,7 @@ public class GWardrobe extends ExtensionForm{
 
     private boolean isEnabled = false;
     private File directory;
-    private File outfits;
+    private File outfitsFile;
 
     private final HashMap<Integer, HEntity> users = new HashMap<>();
     private final HashMap<Integer, String> userFigures = new HashMap<>();
@@ -39,8 +44,9 @@ public class GWardrobe extends ExtensionForm{
 
     private int selectedIndex = -1;
 
-
     private final HashSet<String> loadedFigureStrings = new HashSet<String>();
+    private JSONArray currentOutfits = new JSONArray(); // JSON ARRAY
+
 
     public ToggleButton wardrobeToggleButton;
     public ListView<String> outlookList;
@@ -54,6 +60,8 @@ public class GWardrobe extends ExtensionForm{
     public CheckBox aotChk;
     public CheckBox wearChk;
 
+    public ChoiceBox<Character> genderChoiceBox;
+
     public TextField generalOutfitName;
     public TextField customOutfitName;
     public TextField otherOutfitName;
@@ -65,13 +73,20 @@ public class GWardrobe extends ExtensionForm{
 
     @Override
     protected void initExtension() {
-         dinoImage = getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110");
-        loadWardrobe();
+        genderChoiceBox.getItems().add('F');
+        genderChoiceBox.getItems().add('M');
+
+        dinoImage = getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110");
 
         generalImage.imageProperty().set(dinoImage);
         customFigureImage.imageProperty().set(defaultImage);
 
+        loadWardrobe();
+
         intercept(HMessage.Direction.TOSERVER, "GetSelectedBadges", hMessage -> {
+            if(!isEnabled)
+                return;
+
             if(!copyOthersTab.isSelected())
                 return;
 
@@ -129,6 +144,8 @@ public class GWardrobe extends ExtensionForm{
         }); // Someone came into the current room
 
         intercept(HMessage.Direction.TOCLIENT, "UserRemove", hMessage -> {
+            if(!isEnabled)
+                return;
 
             int index = Integer.parseInt(hMessage.getPacket().readString());
             users.remove(index);
@@ -142,11 +159,11 @@ public class GWardrobe extends ExtensionForm{
 
             HPacket packet = hMessage.getPacket();
             String figureString = packet.readString();
-            String sex = packet.readString();
+            String gender = packet.readString();
 
             if(wardrobeToggleButton.isSelected()){
                 String outfitName = generalOutfitName.getText();
-                addFigure(figureString,sex, outfitName);
+                addOutfit(outfitName,figureString, gender);
                 System.out.println("[!] - You changed your outfit, I added this to your wardrobe!");
             }
 
@@ -183,6 +200,8 @@ public class GWardrobe extends ExtensionForm{
 
     }
 
+
+
     private boolean wardrobeFileExists() {
         try{
             directory = new File(new File(GWardrobe.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent() + "/Wardrobe");
@@ -198,18 +217,19 @@ public class GWardrobe extends ExtensionForm{
             }
 
             //check if file exists
-            outfits = new File(directory, "Outfits.txt");
-            if(!outfits.exists()){
+            outfitsFile = new File(directory, "outfits.json");
+            if(!outfitsFile.exists()){
                 System.out.println("[!] - File does not exist! Creating one..");
-                outfits.createNewFile();
+                outfitsFile.createNewFile();
+                insertJSONArray();
             }else {
                 System.out.println("[!] - File exists!");
             }
 
-            if(!outfits.exists())
+            if(!outfitsFile.exists())
                 return false;
 
-            readWardrobeFile();
+            loadOutfits();
             return true;
         }
 
@@ -221,102 +241,215 @@ public class GWardrobe extends ExtensionForm{
 
     }
 
-    private void writeToFile(String text){
-        if(outfits==null || !outfits.exists()){
-            System.out.println("[!] - Error, Outfits.txt is null");
-            return;
+
+    private boolean loadOutfits(){
+        currentOutfits = new JSONArray();
+        JSONParser parser = new JSONParser();
+        try{
+            currentOutfits = (JSONArray)parser.parse(new FileReader(outfitsFile));
+            System.out.println("[!] - Loaded outfits. "+ currentOutfits.size());
+        } catch (Exception e) {
+            System.out.println("Smoething went wrong");
+            return false;
         }
+        updateListView();
+        return true;
+    }
+
+    private boolean writeToJSONFile(JSONObject object){
+        if(outfitsFile ==null || !outfitsFile.exists()){
+            System.out.println("[!] - Error, outfits.json file does not exist.");
+            return false;
+        }
+
         System.out.println("[!] - Trying to write to file.." );
+        JSONParser parser = new JSONParser();
+        try{
+            Object rootObject = parser.parse(new FileReader(outfitsFile));
+            JSONArray outfitsFromFile = (JSONArray) rootObject;
 
-        try
-        {
-            FileWriter fileWriter = new FileWriter(outfits, true);
+            outfitsFromFile.add(object);
+
+            FileWriter fileWriter = new FileWriter(outfitsFile);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.append(text);
-            bufferedWriter.newLine();
+            bufferedWriter.write(outfitsFromFile.toJSONString());
+            bufferedWriter.flush();
             bufferedWriter.close();
 
-        }
-        catch(IOException ex) {
-            System.out.println("Error writing to file");}
-        }
-
-    private void readWardrobeFile(){
-        if(outfits==null || !outfits.exists())
-            return;
-        System.out.println("[!] - Trying to read file..");
-        try {
-            Scanner myReader = new Scanner(outfits);
-            while (myReader.hasNextLine()) {
-                String read = myReader.nextLine();
-                if(read.isEmpty())
-                    continue;
-                loadedFigureStrings.add(read);
-            }
-            myReader.close();
-            System.out.println("[!] - Done with writing to file. Total lines: " + loadedFigureStrings.size());
-            try{
-                //remove duplicates
-                overwriteUniqueListToFile();
-            }
-            catch (Exception e){
-            }
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("[!] - An error occurred while trying to write.");
-            e.printStackTrace();
-        }
-    }
-
-    private void overwriteUniqueListToFile() {
-        try{
-            System.out.println("[!] - Trying to Delete and Create file..");
-            System.out.println("[!] Deleted: "+ outfits.delete());
-            System.out.println("[!] Created: "+ outfits.createNewFile());
-
-            System.out.println("[!] - Total lines to add: "+ loadedFigureStrings.size());
-            for (String string : loadedFigureStrings) {
-                writeToFile(string);
-            }
+            return true;
         }
         catch (Exception e){
-            System.out.println("[!] - Error while trying to overwrite file.");
+            System.out.println("Error writing to file");
         }
+
+        return false;
     }
 
-    private  void addFigure(String figureString, String sex, String outfitName){
-        if(outfitName.isEmpty() || outfitName == ""){
-            outfitName = "No name";
+    private boolean addOutfit(String name, String figureString, String gender){
+        if(name.isEmpty() || name == "" || name == null){
+            name = "No name";
         }
+        gender = gender.toUpperCase();
 
-        String toAdd = String.format("%s\t\t\t%s\t\t\t%s", outfitName,figureString,sex);
-        if(loadedFigureStrings.add(toAdd)){
-            writeToFile(toAdd);
+        JSONObject toAdd = new JSONObject();
+        toAdd.put("Name", name);
+        toAdd.put("FigureString", figureString);
+        toAdd.put("Gender", gender);
+
+        return addOutfit(toAdd);
+    }
+
+    private boolean addOutfit(JSONObject outfit){
+        if(alreadyExists(outfit.get("FigureString").toString()))
+            return false;
+
+        if(currentOutfits.add(outfit)){
+            writeToJSONFile(outfit);
             updateListView();
         }
+        return true;
 
+    }
+
+    private boolean deleteJSONObject(JSONObject toRemove){
+        if(currentOutfits.remove(toRemove)) {
+            if(currentOutfits.size() < 1){
+                deleteAllOutfits();
+                return true;
+            }
+            if (overWriteFile()) {
+                updateListView();
+                System.out.println("[!] - Removed succesfully");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean alreadyExists(String figureString) {
+        for (Object outfit:currentOutfits) {
+            JSONObject obj = (JSONObject) outfit;
+            if(obj.get("FigureString").equals(figureString)){
+                System.out.printf("[!] - Duplicate found");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean overWriteFile() {
+        JSONArray currentTempOutfits = new JSONArray();
+
+        for (Object object: currentOutfits) {
+            currentTempOutfits.add((JSONObject)object);
+        }
+
+        if(!deleteAllOutfits())
+            return false;
+
+        System.out.println("Overwriting all " +currentTempOutfits.size()+ " figures");
+        for (Object outfit: currentTempOutfits) {
+            if(!writeToJSONFile((JSONObject) outfit))
+                return false;
+        }
+        return true;
+    }
+
+    @FXML
+    private boolean deleteAllOutfits(){
+        currentOutfits.clear();
+        try{
+            if(outfitsFile ==null || !outfitsFile.exists()){
+                System.out.println("[!] - Error, outfits.json file does not exist.");
+                return false;
+            }
+
+            try{
+                FileWriter fileWriter = new FileWriter(outfitsFile);
+                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                bufferedWriter.write("[]");
+                bufferedWriter.flush();
+                bufferedWriter.close();
+                updateListView();
+                return true;
+            }
+            catch (Exception e){
+                System.out.println("Error writing to file");
+            }
+
+            return false;
+
+        }
+        catch (Exception e){
+
+        }
+
+        /*System.out.println("file is deleted: " + outfitsFile.delete());
+        try {
+            boolean success = outfitsFile.createNewFile();
+            if(success){
+                System.out.println("Created new file");
+                if(insertJSONArray()){
+                    return loadOutfits();
+                }
+            }else {
+                System.out.println("COULLD NOT CREATE FILE");
+            }
+        }
+
+        catch (IOException e) {
+            return false;
+        }*/
+        return false;
+    }
+
+    private boolean insertJSONArray() {
+        try{
+            FileWriter fileWriter = new FileWriter(outfitsFile,false);
+            fileWriter.write("[]");
+            fileWriter.flush();
+            fileWriter.close();
+            System.out.println("[!] - Created initial JSON Array");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 
     private void loadWardrobe() {
         wardrobeFileExists(); /// check if file exist
-        updateListView(); // load ListView table
     }
 
     private void updateListView() {
 
         Platform.runLater(()->{
             outlookList.getItems().clear();
-            for (String outfit :loadedFigureStrings) {
-                String[] split = outfit.split("\t\t\t");
+            System.out.println("Total LIST items: " +outlookList.getItems().size());
+            System.out.println("Total OUTFIT items: " +currentOutfits.size());
+            for (Object outfitObject :currentOutfits) {
 
-                String outfitName = split[0];
-                String figureString = split[1];
-                String gender = split[2];
-                outlookList.getItems().add(outfitName+"\t\t\t"+ figureString +"\t\t\t" + gender);
+                JSONObject outfit = (JSONObject) outfitObject;
+
+                String outfitName = outfit.get("Name").toString();
+                //String figureString = outfit.get("FigureString").toString();
+                //String gender = outfit.get("Gender").toString();
+
+                //outlookList.getItems().add(outfitName+"\t\t\t"+ figureString +"\t\t\t" + gender);
+                outlookList.getItems().add(outfitName);
             }
         });
+    }
+
+
+    private void SetOutfit(JSONObject outfit){
+        String figureString = outfit.get("FigureString").toString();
+        String gender = outfit.get("Gender").toString();
+
+        SetOutfit(figureString,gender);
     }
 
     private void SetOutfit(String figureString, String gender){
@@ -326,6 +459,11 @@ public class GWardrobe extends ExtensionForm{
     private Image getImageByFigureString(String figureString){
         return new Image(baseUrl+figureString);
     }
+
+    private Image getImageByOutfitObject(JSONObject outfit){
+        return getImageByFigureString(outfit.get("FigureString").toString());
+    }
+
 
     public void toggleWardrobeButton(ActionEvent actionEvent) {
         Platform.runLater(()->{
@@ -339,32 +477,23 @@ public class GWardrobe extends ExtensionForm{
         });
     }
 
-    public void resetFile(ActionEvent actionEvent) {
-        outfits.delete();
-        try {
-            outfits.createNewFile();
-        }
-        catch (Exception e){
-
-        }
-    }
 
     public void OnSetOutfitClicked(ActionEvent actionEvent) {
-        String[] figureStringAndSex = GetSelectedOutfit(null).split("\t\t\t");
-        if(figureStringAndSex.length <= 0)
+        JSONObject selectedOutfit = GetSelectedOutfit(null);
+
+        if(selectedOutfit.isEmpty() || selectedOutfit == null)
             return;
 
-        SetOutfit(figureStringAndSex[1], figureStringAndSex[2]);
+        SetOutfit(selectedOutfit);
     }
 
     public void addCustomFigure(ActionEvent actionEvent) {
-        //use format shown below:
-        //ch-3279-1408.sh-3027-110-64.cc-3075-110.hr-3163-45.lg-3058-64.ha-3620-0.hd-180-1390.ca-3187-96:M
 
-        String[] figureStringAndSex = customFigureText.getText().split(":");
-        String outfitName = customOutfitName.getText();
+        String name = customOutfitName.getText();
+        String figureString = customFigureText.getText();
+        String gender = genderChoiceBox.getSelectionModel().getSelectedItem().toString();
 
-        addFigure(figureStringAndSex[0], figureStringAndSex[1], outfitName);
+        addOutfit(name, figureString, gender);
     }
 
     public void TurnOffGeneral(Event event) {
@@ -375,25 +504,29 @@ public class GWardrobe extends ExtensionForm{
     }
 
     public void deleteSelected(ActionEvent actionEvent) {
-        String toRemove = GetSelectedOutfit(null);
-        if(toRemove==null)
+        JSONObject toRemove = GetSelectedOutfit(null);
+
+        if(toRemove==null || toRemove.isEmpty())
             return;
 
-        loadedFigureStrings.remove(toRemove);
-        overwriteUniqueListToFile();
-        updateListView();
+
+        deleteJSONObject(toRemove);
 
         Platform.runLater(()->{
             wardrobeImage.setImage(new Image("defaultImage.png"));
         });
-        System.out.println("[!] - Removed succesfully");
+        System.out.println(currentOutfits.size());
     }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void addSelectedHabboOutfit(ActionEvent actionEvent) {
         if(selectedIndex == -1) {
             System.out.println("[x] - selectedIndex is unvalid");
             return;
         }
+
         String outfitName = otherOutfitName.getText();
         String figureString = userFigures.get(selectedIndex);
         String gender = userGenders.get(selectedIndex).toString();
@@ -401,18 +534,21 @@ public class GWardrobe extends ExtensionForm{
         if(wearChk.isSelected())
             SetOutfit(figureString, gender);
 
-        addFigure(figureString, gender, outfitName);
-
-        updateListView();
+        addOutfit(outfitName,figureString, gender);
     }
 
-    public String GetSelectedOutfit(MouseEvent mouseEvent) {
-        if(outlookList.getItems().size() == 0)
-            return "";
+
+    public JSONObject GetSelectedOutfit(MouseEvent mouseEvent) {
+        if(outlookList.getItems().size() <= 0 || currentOutfits.size() <= 0)
+            return null;
+
+        int index = outlookList.getSelectionModel().getSelectedIndex();
+        JSONObject selectedOutfit = (JSONObject) currentOutfits.get(index);
+
         Platform.runLater(()->{
-            wardrobeImage.setImage(getImageByFigureString(outlookList.getSelectionModel().getSelectedItem().split("\t\t\t")[1]));
+            wardrobeImage.setImage(getImageByOutfitObject(selectedOutfit));
         });
-        return outlookList.getSelectionModel().getSelectedItem();
+        return selectedOutfit;
     }
 
     public void changeCustomFigure(KeyEvent keyEvent) {
@@ -420,7 +556,7 @@ public class GWardrobe extends ExtensionForm{
             customFigureImage.imageProperty().set(defaultImage);
         }
         Platform.runLater(()->{
-            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText().split("\t\t\t")[0]));
+            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText()));
 
             if(customFigureText.getText().equals("")){
                 customFigureText.styleProperty().set("-fx-background-color: #FFAAAA; -fx-border-color: #000000");
