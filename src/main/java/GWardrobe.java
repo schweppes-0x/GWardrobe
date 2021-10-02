@@ -8,30 +8,29 @@ import gearth.protocol.HPacket;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.*;
 import java.lang.*;
-import java.nio.file.Files;
 import java.util.*;
 
 
 @ExtensionInfo(
         Title = "GWardrobe",
         Description = "Save and load your habbo outfits.",
-        Version = "1.3",
+        Version = "1.4",
         Author = "schweppes0x"
 )
 
 public class GWardrobe extends ExtensionForm{
-
     private boolean isEnabled = false;
-    private File directory;
-    private File outfits;
 
     private final HashMap<Integer, HEntity> users = new HashMap<>();
     private final HashMap<Integer, String> userFigures = new HashMap<>();
@@ -39,8 +38,7 @@ public class GWardrobe extends ExtensionForm{
 
     private int selectedIndex = -1;
 
-
-    private final HashSet<String> loadedFigureStrings = new HashSet<String>();
+    private JSONArray currentOutfits = new JSONArray();
 
     public ToggleButton wardrobeToggleButton;
     public ListView<String> outlookList;
@@ -54,6 +52,8 @@ public class GWardrobe extends ExtensionForm{
     public CheckBox aotChk;
     public CheckBox wearChk;
 
+    public ChoiceBox<Character> genderChoiceBox;
+
     public TextField generalOutfitName;
     public TextField customOutfitName;
     public TextField otherOutfitName;
@@ -65,13 +65,19 @@ public class GWardrobe extends ExtensionForm{
 
     @Override
     protected void initExtension() {
-         dinoImage = getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110");
-        loadWardrobe();
+        loadOutfits();
+        genderChoiceBox.getItems().add('F');
+        genderChoiceBox.getItems().add('M');
+
+        dinoImage = getImageByFigureString("hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110");
 
         generalImage.imageProperty().set(dinoImage);
         customFigureImage.imageProperty().set(defaultImage);
 
         intercept(HMessage.Direction.TOSERVER, "GetSelectedBadges", hMessage -> {
+            if(!isEnabled)
+                return;
+
             if(!copyOthersTab.isSelected())
                 return;
 
@@ -129,6 +135,8 @@ public class GWardrobe extends ExtensionForm{
         }); // Someone came into the current room
 
         intercept(HMessage.Direction.TOCLIENT, "UserRemove", hMessage -> {
+            if(!isEnabled)
+                return;
 
             int index = Integer.parseInt(hMessage.getPacket().readString());
             users.remove(index);
@@ -142,11 +150,11 @@ public class GWardrobe extends ExtensionForm{
 
             HPacket packet = hMessage.getPacket();
             String figureString = packet.readString();
-            String sex = packet.readString();
+            String gender = packet.readString();
 
             if(wardrobeToggleButton.isSelected()){
                 String outfitName = generalOutfitName.getText();
-                addFigure(figureString,sex, outfitName);
+                addOutfit(outfitName,figureString, gender);
                 System.out.println("[!] - You changed your outfit, I added this to your wardrobe!");
             }
 
@@ -183,140 +191,107 @@ public class GWardrobe extends ExtensionForm{
 
     }
 
-    private boolean wardrobeFileExists() {
-        try{
-            directory = new File(new File(GWardrobe.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent() + "/Wardrobe");
-            //check if dir exists
-            if(directory.exists()){
-                System.out.println("[!] - Directory exists!");
-                System.out.println(directory.getPath());
-            }else {
 
-                System.out.println("[!] - Dir does not exist. Creating one...");
-                Files.createDirectories(directory.toPath());
-                System.out.println("[!] - Directory created!");
-            }
-
-            //check if file exists
-            outfits = new File(directory, "Outfits.txt");
-            if(!outfits.exists()){
-                System.out.println("[!] - File does not exist! Creating one..");
-                outfits.createNewFile();
-            }else {
-                System.out.println("[!] - File exists!");
-            }
-
-            if(!outfits.exists())
-                return false;
-
-            readWardrobeFile();
-            return true;
-        }
-
-        catch (Exception e){
-            System.out.println("[!] - Something went wrong.");
-            System.out.println(e);
+    private boolean loadOutfits(){
+        currentOutfits = Cacher.getJSONArrayFromFile();
+        if(currentOutfits == null)
             return false;
-        }
 
+        updateListView();
+        return true;
     }
 
-    private void writeToFile(String text){
-        if(outfits==null || !outfits.exists()){
-            System.out.println("[!] - Error, Outfits.txt is null");
-            return;
-        }
-        System.out.println("[!] - Trying to write to file.." );
-
-        try
-        {
-            FileWriter fileWriter = new FileWriter(outfits, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-            bufferedWriter.append(text);
-            bufferedWriter.newLine();
-            bufferedWriter.close();
-
-        }
-        catch(IOException ex) {
-            System.out.println("Error writing to file");}
-        }
-
-    private void readWardrobeFile(){
-        if(outfits==null || !outfits.exists())
-            return;
-        System.out.println("[!] - Trying to read file..");
-        try {
-            Scanner myReader = new Scanner(outfits);
-            while (myReader.hasNextLine()) {
-                String read = myReader.nextLine();
-                if(read.isEmpty())
-                    continue;
-                loadedFigureStrings.add(read);
-            }
-            myReader.close();
-            System.out.println("[!] - Done with writing to file. Total lines: " + loadedFigureStrings.size());
-            try{
-                //remove duplicates
-                overwriteUniqueListToFile();
-            }
-            catch (Exception e){
-            }
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("[!] - An error occurred while trying to write.");
-            e.printStackTrace();
-        }
+    private boolean updateJSONFile(){
+        if(currentOutfits == null || currentOutfits.size() == 0)
+            return Cacher.updateCache("[]");
+        else
+        return Cacher.updateCache(currentOutfits.toJSONString());
     }
 
-    private void overwriteUniqueListToFile() {
-        try{
-            System.out.println("[!] - Trying to Delete and Create file..");
-            System.out.println("[!] Deleted: "+ outfits.delete());
-            System.out.println("[!] Created: "+ outfits.createNewFile());
+    private boolean addOutfit(String name, String figureString, String gender){
+        if(name.isEmpty() || name == "" || name == null){
+            name = "No name";
+        }
+        gender = gender.toUpperCase();
 
-            System.out.println("[!] - Total lines to add: "+ loadedFigureStrings.size());
-            for (String string : loadedFigureStrings) {
-                writeToFile(string);
-            }
-        }
-        catch (Exception e){
-            System.out.println("[!] - Error while trying to overwrite file.");
-        }
+        JSONObject toAdd = new JSONObject();
+        toAdd.put("Name", name);
+        toAdd.put("FigureString", figureString);
+        toAdd.put("Gender", gender);
+
+        return addOutfit(toAdd);
     }
 
-    private  void addFigure(String figureString, String sex, String outfitName){
-        if(outfitName.isEmpty() || outfitName == ""){
-            outfitName = "No name";
-        }
+    private boolean addOutfit(JSONObject outfit){
+        if(alreadyExists(outfit.get("FigureString").toString()))
+            return false;
 
-        String toAdd = String.format("%s\t\t\t%s\t\t\t%s", outfitName,figureString,sex);
-        if(loadedFigureStrings.add(toAdd)){
-            writeToFile(toAdd);
+        if(currentOutfits.add(outfit)){
+            updateJSONFile();
             updateListView();
         }
-
+        return true;
     }
 
+    private boolean deleteJSONObject(JSONObject toRemove){
+        if(currentOutfits.remove(toRemove)) {
+            updateJSONFile();
+        }else {
+            return false;
+        }
+        updateListView();
+        return false;
+    }
 
-    private void loadWardrobe() {
-        wardrobeFileExists(); /// check if file exist
-        updateListView(); // load ListView table
+    private boolean alreadyExists(String figureString) {
+        if(currentOutfits.size() == 0)
+            return false;
+
+        for (Object outfit:currentOutfits) {
+            JSONObject obj = (JSONObject) outfit;
+            if(obj.get("FigureString").equals(figureString)){
+                System.out.printf("[!] - Duplicate found");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @FXML
+    private boolean deleteAllOutfits(){
+        currentOutfits.clear();
+        boolean deleted = updateJSONFile();
+        updateListView();
+        return deleted;
     }
 
     private void updateListView() {
 
         Platform.runLater(()->{
             outlookList.getItems().clear();
-            for (String outfit :loadedFigureStrings) {
-                String[] split = outfit.split("\t\t\t");
+            for (Object outfitObject :currentOutfits) {
 
-                String outfitName = split[0];
-                String figureString = split[1];
-                String gender = split[2];
-                outlookList.getItems().add(outfitName+"\t\t\t"+ figureString +"\t\t\t" + gender);
+                JSONObject outfit = (JSONObject) outfitObject;
+
+                String outfitName = outfit.get("Name").toString();
+
+                outlookList.getItems().add(outfitName);
+            }
+
+            if(outlookList.getItems().size() == 0){
+                Platform.runLater(()->{
+                    wardrobeImage.imageProperty().set(defaultImage);
+                });
             }
         });
+    }
+
+
+    private void SetOutfit(JSONObject outfit){
+        String figureString = outfit.get("FigureString").toString();
+        String gender = outfit.get("Gender").toString();
+
+        SetOutfit(figureString,gender);
     }
 
     private void SetOutfit(String figureString, String gender){
@@ -326,6 +301,11 @@ public class GWardrobe extends ExtensionForm{
     private Image getImageByFigureString(String figureString){
         return new Image(baseUrl+figureString);
     }
+
+    private Image getImageByOutfitObject(JSONObject outfit){
+        return getImageByFigureString(outfit.get("FigureString").toString());
+    }
+
 
     public void toggleWardrobeButton(ActionEvent actionEvent) {
         Platform.runLater(()->{
@@ -339,32 +319,23 @@ public class GWardrobe extends ExtensionForm{
         });
     }
 
-    public void resetFile(ActionEvent actionEvent) {
-        outfits.delete();
-        try {
-            outfits.createNewFile();
-        }
-        catch (Exception e){
-
-        }
-    }
 
     public void OnSetOutfitClicked(ActionEvent actionEvent) {
-        String[] figureStringAndSex = GetSelectedOutfit(null).split("\t\t\t");
-        if(figureStringAndSex.length <= 0)
+        JSONObject selectedOutfit = GetSelectedOutfit(null);
+
+        if(selectedOutfit.isEmpty() || selectedOutfit == null)
             return;
 
-        SetOutfit(figureStringAndSex[1], figureStringAndSex[2]);
+        SetOutfit(selectedOutfit);
     }
 
     public void addCustomFigure(ActionEvent actionEvent) {
-        //use format shown below:
-        //ch-3279-1408.sh-3027-110-64.cc-3075-110.hr-3163-45.lg-3058-64.ha-3620-0.hd-180-1390.ca-3187-96:M
 
-        String[] figureStringAndSex = customFigureText.getText().split(":");
-        String outfitName = customOutfitName.getText();
+        String name = customOutfitName.getText();
+        String figureString = customFigureText.getText();
+        String gender = genderChoiceBox.getSelectionModel().getSelectedItem().toString();
 
-        addFigure(figureStringAndSex[0], figureStringAndSex[1], outfitName);
+        addOutfit(name, figureString, gender);
     }
 
     public void TurnOffGeneral(Event event) {
@@ -375,25 +346,27 @@ public class GWardrobe extends ExtensionForm{
     }
 
     public void deleteSelected(ActionEvent actionEvent) {
-        String toRemove = GetSelectedOutfit(null);
-        if(toRemove==null)
+        JSONObject toRemove = GetSelectedOutfit(null);
+
+        if(toRemove==null || toRemove.isEmpty())
             return;
 
-        loadedFigureStrings.remove(toRemove);
-        overwriteUniqueListToFile();
-        updateListView();
+        deleteJSONObject(toRemove);
 
         Platform.runLater(()->{
             wardrobeImage.setImage(new Image("defaultImage.png"));
         });
-        System.out.println("[!] - Removed succesfully");
+        System.out.println(currentOutfits.size());
     }
+
+
 
     public void addSelectedHabboOutfit(ActionEvent actionEvent) {
         if(selectedIndex == -1) {
             System.out.println("[x] - selectedIndex is unvalid");
             return;
         }
+
         String outfitName = otherOutfitName.getText();
         String figureString = userFigures.get(selectedIndex);
         String gender = userGenders.get(selectedIndex).toString();
@@ -401,18 +374,24 @@ public class GWardrobe extends ExtensionForm{
         if(wearChk.isSelected())
             SetOutfit(figureString, gender);
 
-        addFigure(figureString, gender, outfitName);
-
-        updateListView();
+        addOutfit(outfitName,figureString, gender);
     }
 
-    public String GetSelectedOutfit(MouseEvent mouseEvent) {
-        if(outlookList.getItems().size() == 0)
-            return "";
+
+    public JSONObject GetSelectedOutfit(MouseEvent mouseEvent) {
+        if(outlookList.getItems().size() <= 0 || currentOutfits.size() <= 0)
+            return null;
+
+        int index = outlookList.getSelectionModel().getSelectedIndex();
+        if(index > outlookList.getItems().size())
+            index = outlookList.getItems().size()-1;
+
+        JSONObject selectedOutfit = (JSONObject) currentOutfits.get(index);
+
         Platform.runLater(()->{
-            wardrobeImage.setImage(getImageByFigureString(outlookList.getSelectionModel().getSelectedItem().split("\t\t\t")[1]));
+            wardrobeImage.setImage(getImageByOutfitObject(selectedOutfit));
         });
-        return outlookList.getSelectionModel().getSelectedItem();
+        return selectedOutfit;
     }
 
     public void changeCustomFigure(KeyEvent keyEvent) {
@@ -420,7 +399,7 @@ public class GWardrobe extends ExtensionForm{
             customFigureImage.imageProperty().set(defaultImage);
         }
         Platform.runLater(()->{
-            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText().split("\t\t\t")[0]));
+            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText()));
 
             if(customFigureText.getText().equals("")){
                 customFigureText.styleProperty().set("-fx-background-color: #FFAAAA; -fx-border-color: #000000");
