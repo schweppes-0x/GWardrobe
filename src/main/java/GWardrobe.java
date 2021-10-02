@@ -32,7 +32,6 @@ public class GWardrobe extends ExtensionForm{
     private boolean isEnabled = false;
     private File directory;
     private File outfits;
-    private boolean copyOthers = true;
 
     private final HashMap<Integer, HEntity> users = new HashMap<>();
     private final HashMap<Integer, String> userFigures = new HashMap<>();
@@ -41,7 +40,7 @@ public class GWardrobe extends ExtensionForm{
     private int selectedIndex = -1;
 
 
-    private HashSet<String> loadedFigureStrings = new HashSet<String>();
+    private final HashSet<String> loadedFigureStrings = new HashSet<String>();
 
     public ToggleButton wardrobeToggleButton;
     public ListView<String> outlookList;
@@ -52,9 +51,17 @@ public class GWardrobe extends ExtensionForm{
     public ImageView selectedHabboImage;
     public Tab copyOthersTab;
     public Button otherHabboButton;
-    private Image defaultImage = new Image("defaultImage.png");
+    public CheckBox aotChk;
+    public CheckBox wearChk;
+
+    public TextField generalOutfitName;
+    public TextField customOutfitName;
+    public TextField otherOutfitName;
+
+
+    private final Image defaultImage = new Image("defaultImage.png");
     private Image dinoImage;
-    private String baseUrl = "https://www.habbo.com/habbo-imaging/avatarimage?size=m&figure=";
+    private final String baseUrl = "https://www.habbo.com/habbo-imaging/avatarimage?size=m&figure=";
 
     @Override
     protected void initExtension() {
@@ -136,10 +143,13 @@ public class GWardrobe extends ExtensionForm{
             HPacket packet = hMessage.getPacket();
             String figureString = packet.readString();
             String sex = packet.readString();
+
             if(wardrobeToggleButton.isSelected()){
-                addFigure(figureString,sex);
+                String outfitName = generalOutfitName.getText();
+                addFigure(figureString,sex, outfitName);
                 System.out.println("[!] - You changed your outfit, I added this to your wardrobe!");
             }
+
             Platform.runLater(()->{
                 generalImage.imageProperty().set(new Image(baseUrl+figureString));
             });
@@ -275,13 +285,17 @@ public class GWardrobe extends ExtensionForm{
         }
     }
 
+    private  void addFigure(String figureString, String sex, String outfitName){
+        if(outfitName.isEmpty() || outfitName == ""){
+            outfitName = "No name";
+        }
 
-    private void addFigure(String figureString, String sex){
-        String toAdd = String.format("%s:%s", figureString,sex);
+        String toAdd = String.format("%s\t\t\t%s\t\t\t%s", outfitName,figureString,sex);
         if(loadedFigureStrings.add(toAdd)){
             writeToFile(toAdd);
             updateListView();
         }
+
     }
 
 
@@ -294,18 +308,22 @@ public class GWardrobe extends ExtensionForm{
 
         Platform.runLater(()->{
             outlookList.getItems().clear();
-            for (String s:loadedFigureStrings) {
-                outlookList.getItems().add(s);
+            for (String outfit :loadedFigureStrings) {
+                String[] split = outfit.split("\t\t\t");
+
+                String outfitName = split[0];
+                String figureString = split[1];
+                String gender = split[2];
+                outlookList.getItems().add(outfitName+"\t\t\t"+ figureString +"\t\t\t" + gender);
             }
         });
     }
 
-    private void SetOutfit(String figureString, String sex){
-        sendToServer(new HPacket("UpdateFigureData", HMessage.Direction.TOCLIENT, sex, figureString));
+    private void SetOutfit(String figureString, String gender){
+        sendToServer(new HPacket("UpdateFigureData", HMessage.Direction.TOSERVER, gender, figureString));
     }
 
     private Image getImageByFigureString(String figureString){
-        System.out.println("[] getting image");
         return new Image(baseUrl+figureString);
     }
 
@@ -332,15 +350,21 @@ public class GWardrobe extends ExtensionForm{
     }
 
     public void OnSetOutfitClicked(ActionEvent actionEvent) {
-        String[] figureStringAndSex = GetSelectedOutfit(null).split(":");
-        SetOutfit(figureStringAndSex[0], figureStringAndSex[1]);
+        String[] figureStringAndSex = GetSelectedOutfit(null).split("\t\t\t");
+        if(figureStringAndSex.length <= 0)
+            return;
+
+        SetOutfit(figureStringAndSex[1], figureStringAndSex[2]);
     }
 
     public void addCustomFigure(ActionEvent actionEvent) {
         //use format shown below:
         //ch-3279-1408.sh-3027-110-64.cc-3075-110.hr-3163-45.lg-3058-64.ha-3620-0.hd-180-1390.ca-3187-96:M
+
         String[] figureStringAndSex = customFigureText.getText().split(":");
-        addFigure(figureStringAndSex[0], figureStringAndSex[1]);
+        String outfitName = customOutfitName.getText();
+
+        addFigure(figureStringAndSex[0], figureStringAndSex[1], outfitName);
     }
 
     public void TurnOffGeneral(Event event) {
@@ -362,6 +386,7 @@ public class GWardrobe extends ExtensionForm{
         Platform.runLater(()->{
             wardrobeImage.setImage(new Image("defaultImage.png"));
         });
+        System.out.println("[!] - Removed succesfully");
     }
 
     public void addSelectedHabboOutfit(ActionEvent actionEvent) {
@@ -369,9 +394,14 @@ public class GWardrobe extends ExtensionForm{
             System.out.println("[x] - selectedIndex is unvalid");
             return;
         }
+        String outfitName = otherOutfitName.getText();
+        String figureString = userFigures.get(selectedIndex);
+        String gender = userGenders.get(selectedIndex).toString();
 
-        SetOutfit(userFigures.get(selectedIndex), userGenders.get(selectedIndex).toString());
-        addFigure(userFigures.get(selectedIndex), userGenders.get(selectedIndex).toString());
+        if(wearChk.isSelected())
+            SetOutfit(figureString, gender);
+
+        addFigure(figureString, gender, outfitName);
 
         updateListView();
     }
@@ -380,7 +410,7 @@ public class GWardrobe extends ExtensionForm{
         if(outlookList.getItems().size() == 0)
             return "";
         Platform.runLater(()->{
-            wardrobeImage.setImage(getImageByFigureString(outlookList.getSelectionModel().getSelectedItem().split(":")[0]));
+            wardrobeImage.setImage(getImageByFigureString(outlookList.getSelectionModel().getSelectedItem().split("\t\t\t")[1]));
         });
         return outlookList.getSelectionModel().getSelectedItem();
     }
@@ -390,7 +420,7 @@ public class GWardrobe extends ExtensionForm{
             customFigureImage.imageProperty().set(defaultImage);
         }
         Platform.runLater(()->{
-            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText().split(":")[0]));
+            customFigureImage.imageProperty().set(getImageByFigureString(customFigureText.getText().split("\t\t\t")[0]));
 
             if(customFigureText.getText().equals("")){
                 customFigureText.styleProperty().set("-fx-background-color: #FFAAAA; -fx-border-color: #000000");
@@ -407,5 +437,9 @@ public class GWardrobe extends ExtensionForm{
             otherHabboButton.setDisable(true);
             otherHabboButton.textProperty().set("Click on a user");
         });
+    }
+
+    public void toggleAOT(ActionEvent actionEvent) {
+        primaryStage.setAlwaysOnTop(aotChk.isSelected());
     }
 }
