@@ -1,7 +1,7 @@
 # GWardrobe
  Save and load your habbo outfits.
  
- ![](https://user-images.githubusercontent.com/88944709/134421457-74acc03c-c32e-461d-ac07-8c8133e4dbae.png)
+![](https://user-images.githubusercontent.com/88944709/135723663-44c8366d-3dee-41dc-93ba-1f42a8ab2488.png)
 
 
 
@@ -11,6 +11,7 @@ In order to use this extension, you first need to select the file in which you w
 
 To save your own outfit follow the next steps:
  1. Toggle the "Turned OFF" button in General.
+
  2. Go to habbo and Change Outfit.
  3. Make the changes you want.
  4. Save your habbo's outfit.
