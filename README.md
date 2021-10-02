@@ -1,7 +1,7 @@
 # GWardrobe
  Save and load your habbo outfits.
  
-![](https://user-images.githubusercontent.com/88944709/135723663-44c8366d-3dee-41dc-93ba-1f42a8ab2488.png)
+![](https://user-images.githubusercontent.com/88944709/135733430-a5817613-def2-4b8a-beaa-82c8faec30ed.png)
 
 
 # Current Features
@@ -9,10 +9,11 @@
 
 To save your own outfit follow the next steps:
  1. Toggle the "Turned OFF" button in General.
- 2. Go to habbo and Change Outfit.
- 3. Make the changes you want.
- 4. Save your habbo's outfit.
- 5. It is now succesfully saved in your Wardrobe.
+ 2. (OPTIONAL) Specify the name of the outfit.
+ 3. Go to habbo and Change Outfit.
+ 4. Make the changes you want.
+ 5. Save your habbo's outfit.
+ 6. It is now succesfully saved in your Wardrobe.
 
 
 ## [Wardrobe]
@@ -29,17 +30,23 @@ You can also import a custom outfit. To do this you need to have the figure stri
 hr-3163-45.hd-180-1390.ch-3432-110-1408.lg-3434-110-1408.sh-3435-110-92.ha-3431-110-1408.cc-3360-110:M
 ```
 To import your custom outfit, perform the next steps:
- 1. Place your formatted figure string into the text field (FIGURESTRING:GENDER)
- 2. Click on "Add to Wardrobe"
- 3. It now should be added to your Wardrobe.
+ 1. Place the desired figure string into the text field.
+ 2. Select the gender of the outfit (either M or F for Male and Female).
+ 3. (OPTIONAL) Specify the name of the outfit.
+ 4. Click on "Add to Wardrobe"
+ 5. It now should be added to your Wardrobe.
 
 ## [Other Habbo's]
 
  You can also copy outfits of other Habbo's.
- 1. Go into a room
+ 1. Go into a room 
  2. Select the user
- 3. Click on "Add to Wardrobe"
- 4. The outfit can be found in your Wardrobe.
+ 3.  (OPTIONAL) Specify the name of the outfit.
+ 4. Click on "Add to Wardrobe".
+ 5. The outfit can be found in your Wardrobe.
+
+# Important to know
+If you installed the extension while being into a room and you would like to copy someone's outfit, you would need to reload the room first as the extension couldn't register every other outfit in the room. In conclusion, this does NOT need to be done every once you would like to copy someone's outfit!
 
 -------------------------------------------------------------------------------------
 # Features for the futute:
