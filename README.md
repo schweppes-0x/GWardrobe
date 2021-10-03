@@ -48,6 +48,8 @@ To import your custom outfit, perform the next steps:
 # Important to know
 If you installed the extension while being into a room and you would like to copy someone's outfit, you would need to reload the room first as the extension couldn't register every other outfit in the room. In conclusion, this does NOT need to be done every once you would like to copy someone's outfit!
 
+If you recently (in the last 10seconds) changes your outfit, sometimes habbo needs a delay. In this delay you're not able to change your outfit so i suggest waiting 5-10 seconds and clicking on "Wear outfit" again. 
+
 -------------------------------------------------------------------------------------
 # Features for the futute:
  - [✅]Make automatic creation of file. 
